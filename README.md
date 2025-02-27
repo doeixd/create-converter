@@ -63,25 +63,111 @@ pnpm install @doeixd/create-converter
 
 Converters are the core of the library. They define how to transform objects from one shape to another, handling field mappings, validations, and related operations.
 
+```typescript
+// Basic converter
+const converter = createConverter<SourceType, TargetType>((field) => {
+  field('targetField', from => from.sourceField);
+});
+
+// Usage
+const result = await converter({ sourceField: 'value' });
+// result: { targetField: 'value' }
+```
+
 ### Field Functions
 
 Field functions specify how to transform individual properties of an object, allowing for targeted conversion logic.
+
+```typescript
+const converter = createConverter<SourceType, TargetType>((field) => {
+  // Simple field mapping
+  field('id', from => from.id);
+  
+  // Transform field content
+  field('name', from => from.firstName + ' ' + from.lastName);
+  
+  // Conditional transformation
+  field('status', from => from.isActive ? 'Active' : 'Inactive');
+});
+```
 
 ### Object Functions
 
 Object functions allow transforming the entire object at once, useful for complex transformations that can't be handled with field-by-field conversion.
 
+```typescript
+const converter = createConverter<SourceType, TargetType>((field, obj) => {
+  // Transform multiple fields at once
+  obj(from => ({
+    id: from.id,
+    name: from.firstName + ' ' + from.lastName,
+    status: from.isActive ? 'Active' : 'Inactive'
+  }));
+});
+```
+
 ### Hooks
 
 Pre-hooks and post-hooks execute before and after conversion, allowing for setup, validation, or creation of additional objects.
+
+```typescript
+const converter = createConverter<SourceType, TargetType>((field, obj, pre, post) => {
+  // Pre-hook for validation
+  pre((ctx, from) => {
+    if (!from.id) throw new Error('ID is required');
+  });
+  
+  field('id', from => from.id);
+  field('name', from => from.name);
+  
+  // Post-hook for logging or additional processing
+  post((ctx, from, to) => {
+    console.log(`Converted object with ID: ${to.id}`);
+  });
+});
+```
 
 ### Context
 
 Context objects pass information through the conversion process and can be used to influence how conversion happens.
 
+```typescript
+interface MyContext {
+  userId: string;
+  timezone: string;
+}
+
+const converter = createConverter<SourceType, TargetType, MyContext>((field) => {
+  // Use context in field conversion
+  field('createdBy', (from, ctx) => ctx.userId);
+  field('time', (from, ctx) => formatInTimezone(from.time, ctx.timezone));
+}, {
+  context: { userId: 'system', timezone: 'UTC' }
+});
+
+// Pass additional context when using converter
+const result = await converter(source, { userId: 'user-123' });
+```
+
 ### Error Handling
 
 Comprehensive error handling with specific error types and configurable strategies (throw, warn, or ignore).
+
+```typescript
+const converter = createConverter<SourceType, TargetType>((field) => {
+  field('requiredField', from => {
+    if (!from.value) throw new Error('Value is required');
+    return from.value;
+  });
+}, {
+  // Choose error handling strategy
+  errorHandling: 'warn', // Options: 'throw', 'warn', 'ignore'
+  
+  // Custom logger
+  logger: console
+});
+```
+
 
 ## 🚀 Basic Usage
 
