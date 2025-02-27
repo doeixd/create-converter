@@ -1,6 +1,6 @@
 {
   "name": "@doeixd/create-converter",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "files": [
     "dist",
     "src"
@@ -10,6 +10,10 @@
   },
   "license": "MIT",
   "keywords": [
+    "converter",
+    "object-mapper",
+    "data-mapper",
+    "object-converter",
     "pridepack"
   ],
   "devDependencies": {
