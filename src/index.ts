@@ -4,7 +4,7 @@
  * This library provides a flexible and robust way to convert objects from one type to another.
  * It supports bidirectional conversion, hooks for pre and post-processing, and comprehensive error handling.
  *
- * @module @doeixd/createConverter
+ * @module @doeixd/create-converter
  */
 
 import { deepmerge as deepMerge } from 'deepmerge-ts';

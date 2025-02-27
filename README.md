@@ -1,5 +1,5 @@
 # 🔄 Create Converter
-[![npm version](https://img.shields.io/npm/v/@doeixd/createConverter.svg)](https://www.npmjs.com/package/@doeixd/createConverter)
+[![npm version](https://img.shields.io/npm/v/@doeixd/create-converter.svg)](https://www.npmjs.com/package/@doeixd/create-converter)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.5%2B-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -24,7 +24,7 @@ A flexible and robust TypeScript library for converting objects from one type to
 
 ## 🔍 Quick Example
 ```ts
-import { createConverter } from '@doeixd/createConverter';
+import { createConverter } from '@doeixd/create-converter';
 
 // Define source and target types
 interface ApiUser { user_id: string; user_name: string; }
@@ -48,13 +48,13 @@ async function example() {
 ## 📦 Installation
 
 ```bash
-npm install @doeixd/createConverter
+npm install @doeixd/create-converter
 # or
-yarn add @doeixd/createConverter
+yarn add @doeixd/create-converter
 # or
-bun install @doeixd/createConverter
+bun install @doeixd/create-converter
 # or
-pnpm install @doeixd/createConverter
+pnpm install @doeixd/create-converter
 ```
 
 ## 🧩 Key Concepts
@@ -88,7 +88,7 @@ Comprehensive error handling with specific error types and configurable strategi
 Here's a simple example of converting between API and domain models:
 
 ```typescript
-import { createConverter, transforms } from '@doeixd/createConverter';
+import { createConverter, transforms } from '@doeixd/create-converter';
 
 // API model from an external source
 interface UserApiModel {
@@ -169,7 +169,7 @@ async function convertUser() {
 Create converters that can transform in both directions:
 
 ```typescript
-import { createConverter, BidirectionalConverter } from '@doeixd/createConverter';
+import { createConverter, BidirectionalConverter } from '@doeixd/create-converter';
 
 // Create a bidirectional converter
 function createUserConverter(): BidirectionalConverter<UserApiModel, UserDomainModel> {
@@ -217,7 +217,7 @@ async function example() {
 Use the `add` function to create multiple related objects during conversion:
 
 ```typescript
-import { createConverter, Many, getPrimary, getAdditional } from '@doeixd/createConverter';
+import { createConverter, Many, getPrimary, getAdditional } from '@doeixd/create-converter';
 
 interface OrderAPI {
   id: string;
@@ -339,7 +339,7 @@ const result = await converter(sourceObject, {
 The library provides common transforms to simplify common operations:
 
 ```typescript
-import { createConverter, transforms } from '@doeixd/createConverter';
+import { createConverter, transforms } from '@doeixd/create-converter';
 
 const converter = createConverter<SourceType, TargetType>((field) => {
   // String transforms
@@ -653,7 +653,7 @@ createConverter<Source, Target>((field) => {
 When using the `add` function, the converter will return a `Many` instance instead of a single object. The library provides helper functions to make working with these results easier:
 
 ```typescript
-import { getPrimary, hasAdditional, getAdditional } from '@doeixd/createConverter';
+import { getPrimary, hasAdditional, getAdditional } from '@doeixd/create-converter';
 
 // If add() is called in hooks or functions
 const result = await converter(source);
