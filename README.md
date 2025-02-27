@@ -1,9 +1,9 @@
-# 🔄 createConverter
+# 🔄 Create Converter
 [![npm version](https://img.shields.io/npm/v/@doeixd/createConverter.svg)](https://www.npmjs.com/package/@doeixd/createConverter)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.5%2B-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A flexible and robust TypeScript library for converting objects from one type to another with bidirectional support, hooks, and enhanced error handling.
+A flexible and robust TypeScript library for converting objects from one type to another with bidirectional support, hooks, and error handling.
 
 
 
@@ -19,6 +19,7 @@ A flexible and robust TypeScript library for converting objects from one type to
 - **Built-in transformers**: Common transformation operations included
 - **Flexible context passing**: Share context between transformations
 - **Customizable logging**: Detailed logs of the conversion process
+- **Result helpers**: Type-safe utilities for working with converter results
 
 
 ## 🔍 Quick Example
@@ -216,7 +217,7 @@ async function example() {
 Use the `add` function to create multiple related objects during conversion:
 
 ```typescript
-import { createConverter, Many } from '@doeixd/createConverter';
+import { createConverter, Many, getPrimary, getAdditional } from '@doeixd/createConverter';
 
 interface OrderAPI {
   id: string;
@@ -258,11 +259,12 @@ const orderConverter = createConverter<OrderAPI, Order>((field, obj, pre, post, 
 async function processOrder(apiOrder: OrderAPI) {
   const result = await orderConverter(apiOrder);
   
-  if (result instanceof Many) {
-    const [order, ...orderItems] = result;
-    console.log('Order:', order);
-    console.log('Order Items:', orderItems);
-  }
+  // Using helper functions for type-safe access
+  const order = getPrimary(result);
+  const orderItems = getAdditional(result);
+  
+  console.log('Order:', order);
+  console.log('Order Items:', orderItems);
 }
 ```
 
@@ -398,6 +400,47 @@ Creates a reusable converter function that transforms objects from one type to a
 
 **Returns:** A converter function that accepts a source object and optional additional context
 
+### Result Helper Functions
+
+#### `getPrimary`
+
+```typescript
+function getPrimary<T>(result: T | Many<T>): T
+```
+
+Gets the primary object from a converter result, regardless of return type.
+
+**Parameters:**
+- `result`: The converter result (either a single object or Many)
+
+**Returns:** The primary converted object
+
+#### `hasAdditional`
+
+```typescript
+function hasAdditional<T>(result: T | Many<T>): boolean
+```
+
+Checks if the converter result has additional objects beyond the primary one.
+
+**Parameters:**
+- `result`: The converter result
+
+**Returns:** True if the result has additional objects
+
+#### `getAdditional`
+
+```typescript
+function getAdditional<T>(result: T | Many<T>): T[]
+```
+
+Gets any additional objects from a converter result.
+
+**Parameters:**
+- `result`: The converter result
+
+**Returns:** Array of additional objects (empty if none)
+
 ### Classes
 
 #### `Many<T>`
@@ -483,7 +526,10 @@ const userConverter = createConverter<UserAPI, UserDomain>((field) => {
   // Convert nested address using the address converter
   field('address', async from => {
     if (!from.address) return null;
-    return await addressConverter(from.address);
+    
+    // Use getPrimary to handle potential Many return
+    const result = await addressConverter(from.address);
+    return getPrimary(result);
   });
 });
 ```
@@ -509,15 +555,19 @@ const orderConverter = createConverter<OrderAPI, OrderDomain>((field) => {
   field('items', async from => {
     if (!from.items || !from.items.length) return [];
     
-    // Convert each item one by one
+    // Convert each item one by one using getPrimary for type safety
     const items: ItemDomain[] = [];
     for (const item of from.items) {
-      items.push(await itemConverter(item));
+      const result = await itemConverter(item);
+      items.push(getPrimary(result));
     }
     return items;
     
-    // Or using Promise.all for parallel conversion
-    // return await Promise.all(from.items.map(item => itemConverter(item)));
+    // Or using Promise.all and getPrimary for parallel conversion
+    // return await Promise.all(from.items.map(async item => {
+    //   const result = await itemConverter(item);
+    //   return getPrimary(result);
+    // }));
   });
 });
 ```
@@ -600,19 +650,39 @@ createConverter<Source, Target>((field) => {
 
 ### Objects vs Many Return Type
 
-When using the `add` function, the converter will return a `Many` instance instead of a single object:
+When using the `add` function, the converter will return a `Many` instance instead of a single object. The library provides helper functions to make working with these results easier:
 
 ```typescript
+import { getPrimary, hasAdditional, getAdditional } from '@doeixd/createConverter';
+
 // If add() is called in hooks or functions
 const result = await converter(source);
 
-// Check if multiple objects were created
-if (result instanceof Many) {
-  const [mainObject, ...additionalObjects] = result;
-  // Handle multiple objects
-} else {
-  // Handle single object
+// Type-safe way to get the primary object
+const primary = getPrimary(result);
+
+// Check if there are additional objects
+if (hasAdditional(result)) {
+  // Get all additional objects as an array
+  const additionalObjects = getAdditional(result);
+  // Process additional objects
 }
+```
+
+These helper functions make it easier to work with converter results without having to use type assertions or instanceof checks throughout your code.
+
+### Using Helper Functions in Recursive Converters
+
+When using a converter inside another converter (such as for nested objects), use the helper functions to ensure proper type handling:
+
+```typescript
+field('nestedObject', async from => {
+  if (!from.nested) return null;
+  
+  const result = await nestedConverter(from.nested);
+  // Use getPrimary to handle possible Many return type
+  return getPrimary(result);
+});
 ```
 
 ### Context Type Inference
@@ -656,15 +726,7 @@ const prodConverter = createConverter<Source, Target>(definitionFn, { errorHandl
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-Please make sure to update tests as appropriate.
+Contributions are welcome! Please feel free to submit a Pull Request, and update tests as appropriate.
 
 ## 📄 License
 

@@ -836,3 +836,33 @@ export function createConverter<
     }
   };
 }
+
+/**
+ * Gets the primary object from a converter result, regardless of return type
+ * 
+ * @param result - The converter result (either a single object or Many)
+ * @returns The primary object
+ */
+export function getPrimary<T>(result: T | Many<T>): T {
+  return result instanceof Many ? result[0] : result;
+}
+
+/**
+ * Checks if the converter result has additional objects
+ * 
+ * @param result - The converter result
+ * @returns True if the result has additional objects beyond the primary one
+ */
+export function hasAdditional<T>(result: T | Many<T>): boolean {
+  return result instanceof Many && result.length > 1;
+}
+
+/**
+ * Gets any additional objects from a converter result
+ * 
+ * @param result - The converter result
+ * @returns Array of additional objects (empty if none)
+ */
+export function getAdditional<T>(result: T | Many<T>): T[] {
+  return result instanceof Many ? Array.from(result).slice(1) : [];
+}
