@@ -866,3 +866,27 @@ export function hasAdditional<T>(result: T | Many<T>): boolean {
 export function getAdditional<T>(result: T | Many<T>): T[] {
   return result instanceof Many ? Array.from(result).slice(1) : [];
 }
+
+
+/**
+ * Creates a converter definition function from an object
+ * @param {Object.<string, FieldFunction|any>} converterObj - The converter object
+ * @returns {ConverterDefinition}
+ */
+export function objToConverter(converterObj) {
+  return (field, obj) => {
+    const acc = {};
+
+    for (const [fieldName, fieldFn] of Object.entries(converterObj)) {
+      if (typeof fieldFn === 'function') {
+        field(fieldName, fieldFn);
+      } else {
+        acc[fieldName] = fieldFn;
+      }
+    }
+
+    if (Object.keys(acc).length > 0) {
+      obj(() => acc);
+    }
+  };
+}
